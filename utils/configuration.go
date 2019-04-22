@@ -11,6 +11,7 @@ type Configuration struct {
 	// Required fields
 	Token   string
 	Project string
+	Debug   bool
 
 	// Optional fields
 	TagsRegexp string
@@ -41,7 +42,8 @@ func requiredAttrError(attr string) error {
 	return fmt.Errorf("--%s flag required", attr)
 }
 
-// LoadConfiguration conf
+// LoadConfiguration creates a configuration struct to be used internally based on the flags passed
+//	to the application CLI
 func LoadConfiguration() *Configuration {
 	gitlabToken := flag.String(
 		"token",
@@ -53,20 +55,25 @@ func LoadConfiguration() *Configuration {
 		"",
 		"Project path including namespace (eg: my_company/software/my_project)",
 	)
+	debug := flag.Bool(
+		"debug",
+		false,
+		"Set log level to debug",
+	)
 	tagsRegexp := flag.String(
 		"tags-regexp",
 		".*",
-		"Project path including namespace (eg: my_company/software/my_project)",
+		"",
 	)
 	olderThan := flag.String(
 		"older-than",
 		"1w",
-		"Project path including namespace (eg: my_company/software/my_project)",
+		"",
 	)
 	keepN := flag.Int(
 		"keep-n",
 		5,
-		"Project path including namespace (eg: my_company/software/my_project)",
+		"",
 	)
 
 	flag.Parse()
@@ -74,6 +81,7 @@ func LoadConfiguration() *Configuration {
 	return &Configuration{
 		Token:   *gitlabToken,
 		Project: *gitlabProject,
+		Debug:   *debug,
 
 		TagsRegexp: *tagsRegexp,
 		OlderThan:  *olderThan,

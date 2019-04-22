@@ -1,22 +1,26 @@
 package main
 
 import (
-	"log"
 	"strings"
 
 	utils "github.com/ivanetchart/gitlab-registry-cleaner/utils"
+	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
 )
 
 func main() {
 	gitlabConfig, err := utils.LoadConfiguration().Validate()
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		return
 	}
 
-	log.Printf("Gitlab Token: %s", gitlabConfig.Token)
-	log.Printf("Gitlab Project: %s", gitlabConfig.Project)
+	if gitlabConfig.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	log.Debugf("Gitlab Token: %s", gitlabConfig.Token)
+	log.Debugf("Gitlab Project: %s", gitlabConfig.Project)
 
 	git := gitlab.NewClient(nil, gitlabConfig.Token)
 
@@ -26,22 +30,22 @@ func main() {
 	)
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 		return
 	}
 
-	log.Printf(
+	log.Infof(
 		"Found these repositories at %s (it will include also the default one for the project):\n  - %+v",
 		gitlabConfig.Project,
 		strings.Join(utils.GetRepositoriesNames(repositories), "\n  - "),
 	)
 
-	log.Printf(
+	log.Debugf(
 		"Configuration used to delete tags: %s", gitlabConfig,
 	)
 
 	for _, repo := range repositories {
-		log.Printf(
+		log.Infof(
 			"Starting to delete tags from repository: %s",
 			repo.Path,
 		)
@@ -55,7 +59,7 @@ func main() {
 		)
 
 		if bulkErr != nil {
-			log.Println(bulkErr)
+			log.Errorln(bulkErr)
 			return
 		}
 	}
